@@ -142,3 +142,77 @@ deleteButtons.forEach(button => {
         }, 100); // Espera 2 segundos antes de eliminar el elemento
     });
 });
+
+// Selecciona el ícono de búsqueda y el contenedor de la sección derecha
+const searchIcon = document.getElementById('search-icon');
+const rightSection = document.querySelector('.right-section');
+
+// Al hacer clic en el ícono de búsqueda, activa o desactiva la clase 'active'
+searchIcon.addEventListener('click', () => {
+    rightSection.classList.toggle('active');
+});
+
+
+// Selecciona el nombre y la imagen del usuario principal
+const mainProfileName = document.getElementById('main-profile-name');
+const mainProfileImg = document.getElementById('main-profile-img');
+
+// Selecciona todas las opciones de usuario en el menú desplegable
+const userOptions = document.querySelectorAll('.user-option');
+
+// Itera sobre cada opción de usuario y agrega un evento de clic
+userOptions.forEach(option => {
+    option.addEventListener('click', () => {
+        // Obtén el nombre y la imagen del usuario seleccionado
+        const selectedName = option.getAttribute('data-name');
+        const selectedImgSrc = option.getAttribute('data-img');
+
+        // Almacena el nombre y la imagen del usuario principal actual
+        const currentMainName = mainProfileName.textContent;
+        const currentMainImgSrc = mainProfileImg.src;
+
+        // Actualiza el usuario principal con el usuario seleccionado
+        mainProfileName.textContent = selectedName;
+        mainProfileImg.src = selectedImgSrc;
+
+        // Actualiza el usuario en la opción seleccionada con el usuario anterior
+        option.setAttribute('data-name', currentMainName);
+        option.setAttribute('data-img', currentMainImgSrc);
+        option.querySelector('img').src = currentMainImgSrc;
+        option.querySelector('a').textContent = currentMainName;
+    });
+});
+
+const notificationIcon = document.querySelector('.noti-icon');
+const notificationMenu = document.getElementById('notification-menu');
+
+notificationIcon.addEventListener('click', (event) => {
+    event.stopPropagation(); // Evita que se cierre al hacer clic en el ícono
+    notificationMenu.classList.toggle('show');
+});
+
+document.addEventListener('click', (event) => {
+    if (!notificationMenu.contains(event.target) && event.target !== notificationIcon) {
+        notificationMenu.classList.remove('show');
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    var loader = document.getElementById("loader");
+    var loaderImg = document.getElementById("loader-img");
+    var content = document.getElementById("content");
+
+    // Muestra el logo del loader
+    loaderImg.style.display = "flex";
+
+    // Después de 2 segundos, aplica el fade-out al loader
+    setTimeout(function() {
+        loader.classList.add("fade-out");
+
+        // Muestra el contenido de la página después de que el loader desaparece
+        setTimeout(function() {
+            loader.style.display = "none";
+            content.style.display = "block";
+        }, 500); // Duración del fade-out
+    }, 2000); // Duración del logo girando
+});
