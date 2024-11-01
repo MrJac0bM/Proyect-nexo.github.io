@@ -25,11 +25,58 @@ body{
     background: #f1f3f2;
 }
 
-.top-container{
-    background: #031224;
+.top-container {
+    background: linear-gradient(to bottom, #000, #031224);
     border-radius: 0 0 30px 30px;
     padding-bottom: 10px;
+    position: relative; /* Necesario para que los pseudo-elementos se posicionen correctamente */
+    overflow: hidden;
 }
+
+/* Capa de luces */
+.light-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Permite que los clics pasen a través de esta capa */
+    overflow: hidden;
+    border-radius: inherit;
+    z-index: 1; /* Asegura que la capa de luces esté visible sobre el fondo */
+}
+
+.light-overlay::before,
+.light-overlay::after {
+    content: "";
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: rgb(71, 153, 235); /* Luz azul suave */
+    border-radius: 50%;
+    filter: blur(100px);
+    animation: pulse 3s infinite alternate; /* Animación de parpadeo */
+}
+
+/* Posiciones de las luces */
+.light-overlay::before {
+    top: 20px;
+    left: 20px;
+    animation-delay: 0s;
+}
+
+.light-overlay::after {
+    bottom: 20px;
+    right: 20px;
+    animation-delay: 1.5s;
+}
+
+/* Animación de parpadeo */
+@keyframes pulse {
+    0% { opacity: 0.3; transform: scale(1); }
+    100% { opacity: 0.8; transform: scale(1.2); }
+}
+
 
 .top-container .nav{
     display: flex;
@@ -73,6 +120,9 @@ body{
     align-items: center;
     gap: 10px;
 }
+
+
+
 
 .top-container .nav .right-section > i{
     color: #f1f3f2;
@@ -128,6 +178,7 @@ body{
     align-items: center;
     width: 100%;
     margin-bottom: 20px;
+    z-index: 100;
 }
 
 .top-container .status .header h4{
@@ -337,31 +388,7 @@ body{
     width: 43%;
 }
 
-.bottom-container .upcoming .dates{
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 40px;
-}
 
-.bottom-container .upcoming .dates .item{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-}
-
-.bottom-container .upcoming .dates .item h5{
-    font-weight: 600;
-}
-
-.bottom-container .upcoming .dates .item a{
-    color: #000;
-    font-size: 13px;
-    padding: 5px 9px;
-    border-radius: 50%;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
 
 .bottom-container .upcoming .dates .item.active a,
 .bottom-container .upcoming .dates .item a:hover{
@@ -625,8 +652,8 @@ body{
 
 /* Estilo del enlace de texto dentro de la etiqueta */
 .bottom-container .upcoming .events .item .event-info a {
-    font-size: 12px;
-    color: #fff; /* Color del enlace en blanco */
+    font-size: 12px; /* Color del enlace en blanco */
+    color: #fff;
     font-weight: 500;
 }
 
@@ -634,7 +661,6 @@ body{
 .bottom-container .upcoming .events .item .event-info p {
     font-size: 10px;
     color: #d0d0d0; /* Un tono más claro para diferenciar */
-    margin: 0; /* Elimina margen por defecto */
 }
 
 /* Ícono de cierre (X) para eliminar el elemento */
@@ -642,12 +668,174 @@ body{
     font-size: 14px;
     cursor: pointer;
     color: #fff; /* Color de la 'X' en blanco */
-    margin-left: auto; /* Empuja la 'X' al final del item */
+    margin-left: auto;
 }
 
 
-/* Animación de desvanecimiento */
+
+/* Estilo inicial del campo de búsqueda (oculto y desplazado hacia la derecha) */
+.search-input {
+    width: 0;
+    opacity: 0;
+    padding: 8px 12px;
+    border: 1px solid #1e293b;
+    background-color: #1e293b;
+    border-radius: 20px;
+    outline: none;
+    transition: width 0.4s ease, opacity 0.4s ease;
+    position: relative;
+    z-index: 10;
+}
+.search-input::placeholder{
+    color: #fff;
+}
+
+/* Al activar la clase, el campo se expande hacia la izquierda y se muestra */
+.right-section.active .search-input {
+    width: 150px; /* Ajusta el ancho según tus necesidades */
+    opacity: 1;
+    color: #fff;
+}
+
+
+.notification-container{
+    color: #f1f3f2;
+    background: #1e293b;
+    padding: 11px;
+    border-radius: 50%;
+    font-family: boxicons;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    font-weight: 400;
+
+}
+.noti-icon {
+    color: white;
+    cursor: pointer;
+    width: 1.2rem;
+}
+
+.notification-menu {
+    display: block; /* Permite la transición */
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #1e293b;
+    border-radius: 8px;
+    padding: 10px;
+    width: 200px;
+    max-height: 0; /* Colapsado inicialmente */
+    overflow: hidden;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: max-height 0.3s ease, opacity 0.3s ease; /* Transición más lenta */
+    opacity: 0; /* Inicialmente transparente */
+}
+
+.notification-menu.show {
+    max-height: 300px; /* Altura máxima cuando está abierto */
+    opacity: 1; /* Se hace visible */
+}
+
+.notification-item {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    color: #f1f3f2;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item p {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.notification-item span {
+    font-size: 12px;
+    color: #9b9b9b;
+}
+
+
+/* Loader */
+#loader {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease; /* Transición de opacidad */
+}
+
+#loader img {
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite, blink 1.5s ease-in-out infinite; /* Añade la animación de parpadeo */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }   /* Visible al 100% */
+    50% { opacity: 0.3; }      /* Reducido al 30% de opacidad */
+}
+
 .fade-out {
-    opacity: 0; /* Se desvanece completamente */
-    transition: opacity 0.3s ease; /* Duración y suavidad de la animación */
+    opacity: 0; /* Aplica la opacidad 0 para que desaparezca */
+}
+
+/* Capa de luces */
+.light-overlay-2{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Permite que los clics pasen a través de esta capa */
+    overflow: hidden;
+    border-radius: inherit;
+    z-index: 1; /* Asegura que la capa de luces esté visible sobre el fondo */
+}
+
+.light-overlay-2::before,
+.light-overlay-2::after {
+    content: "";
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: rgb(71, 153, 235); /* Luz azul suave */
+    border-radius: 50%;
+    filter: blur(100px);
+    animation: pulse 1s infinite alternate; /* Animación de parpadeo */
+}
+
+/* Posiciones de las luces */
+.light-overlay-2::before {
+    top: 20px;
+    left: 20px;
+    animation-delay: 0s;
+}
+
+.light-overlay-2::after {
+    bottom: 20px;
+    right: 20px;
+    animation-delay: 1.6s;
+}
+
+/* Animación de parpadeo */
+@keyframes pulse {
+    0% { opacity: 0.3; transform: scale(1); }
+    100% { opacity: 0.8; transform: scale(1.2); }
 }
