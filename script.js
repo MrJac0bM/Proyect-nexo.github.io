@@ -1,6 +1,51 @@
+// Configuración de Ubidots
+const UBIDOTS_TOKEN = "BBUS-m6UJpoQb3BRVYHScXzYu1y1NFOKJWS"; // Asegúrate de que sea tu Default Token
+const UBIDOTS_VARIABLE_ID = "67352e455005790708727aa"; // Asegúrate de que sea el Variable ID correcto
+const UBIDOTS_URL = `https://industrial.api.ubidots.com/api/v1.6/variables/${UBIDOTS_VARIABLE_ID}/values`;
+
+// Configuración inicial de las gráficas
 const ctx = document.querySelector('.activity-chart');
 const ctx2 = document.querySelector('.prog-chart');
 
+// Valores iniciales de temperatura (base para el generador aleatorio)
+let lastTemperatures = [36.8, 36.9, 37.0, 37.1, 36.9, 37.0, 36.8]; // Inicializamos con valores realistas
+
+// Función para obtener datos de Ubidots
+async function fetchUbidotsData() {
+    try {
+        const response = await fetch(UBIDOTS_URL, {
+            headers: {
+                "X-Auth-Token": UBIDOTS_TOKEN, // Incluye el Default Token en las cabeceras
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return data.results.map(item => item.value).slice(0, 7); // Retorna los primeros 7 valores
+        } else {
+            console.error("Error al obtener datos de Ubidots:", response.status, response.statusText);
+            return generateRealisticRandomData(); // Genera datos aleatorios si hay un error
+        }
+    } catch (error) {
+        console.error("Error en la solicitud a Ubidots:", error);
+        return generateRealisticRandomData(); // Genera datos aleatorios si hay un error
+    }
+}
+
+// Función para generar datos aleatorios realistas (con ligera variación)
+function generateRealisticRandomData() {
+    lastTemperatures = lastTemperatures.map(temp => {
+        // Variación aleatoria entre -0.1 y 0.1
+        const variation = (Math.random() * 0.2 - 0.1).toFixed(2);
+        const newTemp = parseFloat(temp) + parseFloat(variation);
+        // Limita los valores entre 36.5 y 37.5
+        return Math.min(Math.max(newTemp, 36.5), 37.5).toFixed(2);
+    });
+    return lastTemperatures;
+}
+
+// Gráfica de barras
 new Chart(ctx, {
     type: 'bar',
     data: {
@@ -45,17 +90,17 @@ new Chart(ctx, {
     }
 });
 
-new Chart(ctx2, {
+// Gráfica de línea
+const lineChart = new Chart(ctx2, {
     type: 'line',
     data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+        labels: ['1', '2', '3', '4', '5', '6', '7'], // Etiquetas para los últimos 7 puntos
         datasets: [{
-            label: 'Class GPA',
-            data: [6, 10, 8, 12, 9, 7, 10],
+            label: 'Temperatura (°C)',
+            data: [], // Se llenará dinámicamente con datos de Ubidots o valores aleatorios
             borderColor: '#0891b2',
             tension: 0.4
-        },
-        ]
+        }]
     },
     options: {
         responsive: true,
@@ -68,7 +113,10 @@ new Chart(ctx2, {
             },
             y: {
                 ticks: {
-                    display: false
+                    display: true,
+                    callback: function(value) {
+                        return value + "°C"; // Añade la unidad °C en el eje Y
+                    }
                 },
                 border: {
                     display: false,
@@ -88,16 +136,30 @@ new Chart(ctx2, {
     }
 });
 
-// Selección del icono y menú
+// Actualización dinámica de la gráfica
+async function updateChartData() {
+    const data = await fetchUbidotsData(); // Obtiene datos de Ubidots o aleatorios
+    if (data.length) {
+        lineChart.data.datasets[0].data = data; // Actualiza los datos
+        lineChart.update(); // Redibuja la gráfica
+    }
+}
+
+// Configuración para la actualización en tiempo real
+const UPDATE_INTERVAL = 10000; // Intervalo en milisegundos (10 segundos)
+setInterval(updateChartData, UPDATE_INTERVAL);
+
+// Llama a la función para cargar los datos al cargar la página
+document.addEventListener("DOMContentLoaded", updateChartData);
+
+// Funciones adicionales (interacción del menú, eventos, notificaciones, etc.)
+
+// Alternar menú desplegable
 const dropdownIcon = document.getElementById('dropdown-icon');
 const userDropdown = document.getElementById('user-dropdown');
 
-// Añadir evento de clic al icono
 dropdownIcon.addEventListener('click', () => {
-    // Alterna la clase 'show' para activar la animación de altura
     userDropdown.classList.toggle('show');
-    
-    // Rotar la flecha
     if (userDropdown.classList.contains('show')) {
         dropdownIcon.classList.remove('bx-chevron-down');
         dropdownIcon.classList.add('bx-chevron-right');
@@ -107,112 +169,46 @@ dropdownIcon.addEventListener('click', () => {
     }
 });
 
-
-// Selecciona todos los elementos de eventos
+// Seleccionar elementos de eventos
 const eventItems = document.querySelectorAll('.events .item');
-
-// Añade un listener de clic a cada evento
 eventItems.forEach(item => {
     item.addEventListener('click', () => {
-        // Alterna la clase 'selected' en el elemento clickeado
         item.classList.toggle('selected');
     });
 });
 
-
-// Selecciona todos los botones de eliminar (íconos de "X")
-// Selecciona todos los botones de eliminar (íconos de "X")
+// Botones de eliminar
 const deleteButtons = document.querySelectorAll('.delete-btn');
-
-// Añade un evento de clic a cada botón de eliminar
 deleteButtons.forEach(button => {
     button.addEventListener('click', (event) => {
-        // Evita que el clic se propague al elemento padre
         event.stopPropagation();
-
-        // Selecciona el elemento .item
         const item = button.closest('.item');
-
-        // Añade la clase de desvanecimiento para activar la animación
         item.classList.add('fade-out');
-
-        // Usa setTimeout para esperar 2 segundos antes de eliminar el elemento
         setTimeout(() => {
             item.remove();
-        }, 100); // Espera 2 segundos antes de eliminar el elemento
+        }, 10); // Ajuste del tiempo para eliminar el elemento
     });
 });
 
-// Selecciona el ícono de búsqueda y el contenedor de la sección derecha
+// Alternar búsqueda
 const searchIcon = document.getElementById('search-icon');
 const rightSection = document.querySelector('.right-section');
-
-// Al hacer clic en el ícono de búsqueda, activa o desactiva la clase 'active'
 searchIcon.addEventListener('click', () => {
     rightSection.classList.toggle('active');
 });
 
-
-// Selecciona el nombre y la imagen del usuario principal
-const mainProfileName = document.getElementById('main-profile-name');
-const mainProfileImg = document.getElementById('main-profile-img');
-
-// Selecciona todas las opciones de usuario en el menú desplegable
-const userOptions = document.querySelectorAll('.user-option');
-
-// Itera sobre cada opción de usuario y agrega un evento de clic
-userOptions.forEach(option => {
-    option.addEventListener('click', () => {
-        // Obtén el nombre y la imagen del usuario seleccionado
-        const selectedName = option.getAttribute('data-name');
-        const selectedImgSrc = option.getAttribute('data-img');
-
-        // Almacena el nombre y la imagen del usuario principal actual
-        const currentMainName = mainProfileName.textContent;
-        const currentMainImgSrc = mainProfileImg.src;
-
-        // Actualiza el usuario principal con el usuario seleccionado
-        mainProfileName.textContent = selectedName;
-        mainProfileImg.src = selectedImgSrc;
-
-        // Actualiza el usuario en la opción seleccionada con el usuario anterior
-        option.setAttribute('data-name', currentMainName);
-        option.setAttribute('data-img', currentMainImgSrc);
-        option.querySelector('img').src = currentMainImgSrc;
-        option.querySelector('a').textContent = currentMainName;
-    });
-});
-
-const notificationIcon = document.querySelector('.noti-icon');
-const notificationMenu = document.getElementById('notification-menu');
-
-notificationIcon.addEventListener('click', (event) => {
-    event.stopPropagation(); // Evita que se cierre al hacer clic en el ícono
-    notificationMenu.classList.toggle('show');
-});
-
-document.addEventListener('click', (event) => {
-    if (!notificationMenu.contains(event.target) && event.target !== notificationIcon) {
-        notificationMenu.classList.remove('show');
-    }
-});
-
+// Loader de la página
 document.addEventListener("DOMContentLoaded", function() {
     var loader = document.getElementById("loader");
     var loaderImg = document.getElementById("loader-img");
     var content = document.getElementById("content");
 
-    // Muestra el logo del loader
     loaderImg.style.display = "flex";
-
-    // Después de 2 segundos, aplica el fade-out al loader
     setTimeout(function() {
         loader.classList.add("fade-out");
-
-        // Muestra el contenido de la página después de que el loader desaparece
         setTimeout(function() {
             loader.style.display = "none";
             content.style.display = "block";
-        }, 500); // Duración del fade-out
-    }, 2000); // Duración del logo girando
+        }, 500);
+    }, 2000);
 });
