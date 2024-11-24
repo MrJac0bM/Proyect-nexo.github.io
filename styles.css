@@ -178,7 +178,7 @@ body{
     align-items: center;
     width: 100%;
     margin-bottom: 20px;
-    z-index: 100;
+    z-index: 100; 
 }
 
 .top-container .status .header h4{
@@ -685,6 +685,7 @@ body{
     transition: width 0.4s ease, opacity 0.4s ease;
     position: relative;
     z-index: 10;
+    cursor:default;
 }
 .search-input::placeholder{
     color: #fff;
@@ -695,6 +696,7 @@ body{
     width: 150px; /* Ajusta el ancho según tus necesidades */
     opacity: 1;
     color: #fff;
+    cursor: auto;
 }
 
 
@@ -706,14 +708,13 @@ body{
     font-family: boxicons;
     position: relative;
     display: inline-block;
-    cursor: pointer;
     font-weight: 400;
 
 }
 .noti-icon {
     color: white;
-    cursor: pointer;
     width: 1.2rem;
+    cursor: pointer;
 }
 
 .notification-menu {
@@ -838,4 +839,18 @@ body{
 @keyframes pulse {
     0% { opacity: 0.3; transform: scale(1); }
     100% { opacity: 0.8; transform: scale(1.2); }
+}
+
+/*Imagen de el nav --Imagen de logo de NEXO--**/
+.top-container .nav .logo img{
+    position: absolute;
+    width: 22px;
+    top: 0px;
+    left: -20px
+}
+
+/**Estilos de imagen  de la imagen de NEXO**/
+.top-container .nav .logo{ 
+    position: relative;
+
 }
